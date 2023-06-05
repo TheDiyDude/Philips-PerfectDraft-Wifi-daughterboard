@@ -1,6 +1,6 @@
-//
-// Extension Board Firmware to add Wifi  
-// to your Perfect Draft Beer Machine 
+// Philips-PerfectDraft-Wifi-daughterboard
+// Firmware to add Wifi  
+// to your Perfect Draft Beer dispenser 
 // and set cooling temperaure to a desired
 // value, i.e 7°C 
 //
