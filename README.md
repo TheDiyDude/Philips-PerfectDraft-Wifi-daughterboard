@@ -56,7 +56,7 @@ See the second picture below to build a power supply Y-connector. Use the same c
 ![stabilized power converter](media/StabilizedPowerSupply.png)
 ![PowerSupplyY-Connector2](media/PowerSupplyY-Cable.png)
 ![PowerSupplyY-Connector](media/PowerSupply-Y-Connector.png)
-
+![added-daughterboard](media/pd-back-open-with-daughterboard.png)
 ```
 For communication with the X9C103S digital potentiometer I use the following supporting library:
    https://github.com/lucyamy/LapX9C10X.git
