@@ -2,7 +2,7 @@
 // Firmware to add Wifi  
 // to your Perfect Draft Beer dispenser 
 // and set cooling temperaure to a desired
-// value, i.e 7°C 
+// value, i.e 6°C, 7°C .. 
 //
 // Author: Marc-Oliver Blumenauer 
 //         marc@l3c.de
@@ -73,9 +73,9 @@ void setup() {
   // Prepare WebServer
   server.begin();
 
-  // Prepare X9C103 set wiper to 0
-  //digPot.begin(-1);
-  //delay(5000);
+  // Prepare X9C103 set wiper - to 0 use digPot.begin(-1)
+  digPot.begin();
+  delay(5000);
   
   // Done!
   
@@ -118,6 +118,10 @@ void loop() {
               Serial.println("Temp: store current value in NVRAM");
               digPot.writeNVM();
               delay(100);
+            } else if (header.indexOf("GET /Temp/6deg") >= 0) {
+              Serial.println("Temp: set to 6°C ");
+              digPot.set((float)5.66);
+              delay(100);
             } else if (header.indexOf("GET /Temp/7deg") >= 0) {
               Serial.println("Temp: set to 7°C ");
               digPot.set((float)6.8);
@@ -135,7 +139,8 @@ void loop() {
             client.println("<body><h1 align=\"center\">Perfect Draft Wifi v0.1</h1>");
             sprintf(buffer,"<p><h2 align=\"center\">Digital Pot R = %4.2f KOhm</h2></p>",digPot.getK());
             client.println(buffer);
-            client.println("<p><a href=\"/Temp/bypass\"><button class=\"button\">Bypass</button></a>");
+            client.println("<p><a href=\"/Temp/bypass\"><button class=\"button\">Bypass</button></a></p>");
+            client.println("<p><a href=\"/Temp/6deg\"><button class=\"button\">6&deg;C</button></a>");
             client.println("<a href=\"/Temp/7deg\"><button class=\"button\">7&deg;C</button></a></p>");
             client.println("<p><a href=\"/Temp/inc\"><button class=\"button\">+</button></a></p>");
             client.println("<p><a href=\"/Temp/dec\"><button class=\"button\">-</button></a></p>");
