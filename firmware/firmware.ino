@@ -19,6 +19,15 @@
 // Do not forget to replace your network credentials in this file
 #include "Credentials.h"
 
+// MQTT
+#if defined(__MQTT_ENABLED__)
+  #include <PubSubClient.h>
+  WiFiClient espClient;
+  PubSubClient client(espClient);
+  bool useMQTT = true;
+  int mqttRetryCount = 0;
+#endif
+
 // X9C103 pins
 #define CSPIN  D1
 #define INCPIN D2
@@ -32,6 +41,10 @@ WiFiServer server(80);
 // For HTTP Request
 String header;
 char buffer[255];
+
+#if defined(__MQTT_ENABLED__)
+char kOhm[30];
+#endif
 
 void setup() {
   Serial.begin(115200);
@@ -77,13 +90,39 @@ void setup() {
   digPot.begin();
   delay(5000);
   
+  // MQTT 
+  // initialize mqtt client
+  #if defined(__MQTT_ENABLED__)
+  Serial.print("connecting to MQTT host ");
+  client.setServer(mqtt_hostname, MQTT_PORT);
+  mqttRetryCount=0;
+  if (!client.connected()) {
+        while (!client.connected() && useMQTT) {
+            client.connect(ota_hostname,mqtt_username,mqtt_password);
+            Serial.print(".");
+            mqttRetryCount++;
+            delay(1000);
+            if (mqttRetryCount>=10) { useMQTT=false; }
+        }
+  }
+  //useMQTT = client.connected();
+  if (useMQTT) {
+    Serial.println(". connected!");
+    pub("status", "alive");
+  }
+  if (!useMQTT && mqttRetryCount>=10) {
+    Serial.println(". failed!");
+  }
+  #endif
   // Done!
   
   Serial.println("Setup completed");
 }
 
 void loop() {
-  
+  #if defined(__MQTT_ENABLED__)
+    client.loop();
+  #endif
   WiFiClient client = server.available(); 
   if (client) {                             
     Serial.println("Client available");
@@ -105,14 +144,25 @@ void loop() {
             if (header.indexOf("GET /Temp/inc") >= 0) {
               Serial.println("Temp: Incrementing");
               digPot.offset(+1);
+              #if defined(__MQTT_ENABLED__)
+                sprintf(kOhm,"%4.2f",digPot.getK());
+                pub("kOhm",kOhm);
+              #endif
               delay(100);
             } else if (header.indexOf("GET /Temp/dec") >= 0) {
               Serial.println("Temp: Decrementing");
               digPot.offset(-1);
+              #if defined(__MQTT_ENABLED__)
+                sprintf(kOhm,"%4.2f",digPot.getK());
+                pub("kOhm",kOhm);
+              #endif
               delay(100);
             } else if (header.indexOf("GET /Temp/bypass") >= 0) {
               Serial.println("Temp: Bypass digital potentiometer");
               digPot.set(0);
+              #if defined(__MQTT_ENABLED__)
+                pub("BeerTemp","3");
+              #endif
               delay(100);
             } else if (header.indexOf("GET /Temp/store") >= 0) {
               Serial.println("Temp: store current value in NVRAM");
@@ -120,11 +170,24 @@ void loop() {
               delay(100);
             } else if (header.indexOf("GET /Temp/6deg") >= 0) {
               Serial.println("Temp: set to 6°C ");
-              digPot.set((float)5.66);
+              digPot.set((float)4.8);
+              #if defined(__MQTT_ENABLED__)
+                pub("BeerTemp","6");
+              #endif
               delay(100);
-            } else if (header.indexOf("GET /Temp/7deg") >= 0) {
-              Serial.println("Temp: set to 7°C ");
+            }else if (header.indexOf("GET /Temp/10deg") >= 0) {
+              Serial.println("Temp: set to 10°C ");
+              digPot.set((float)5.66);
+              #if defined(__MQTT_ENABLED__)
+                pub("BeerTemp","10");
+              #endif
+              delay(100);
+            } else if (header.indexOf("GET /Temp/11deg") >= 0) {
+              Serial.println("Temp: set to 11°C ");
               digPot.set((float)6.8);
+              #if defined(__MQTT_ENABLED__)
+                pub("BeerTemp","11");
+              #endif
               delay(100);
             }
 
@@ -136,12 +199,13 @@ void loop() {
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
             client.println(".button2 {background-color: #888899;}</style></head>");
 
-            client.println("<body><h1 align=\"center\">Perfect Draft Wifi v0.1</h1>");
-            sprintf(buffer,"<p><h2 align=\"center\">Digital Pot R = %4.2f KOhm</h2></p>",digPot.getK());
+            client.println("<body><h1 align=\"center\">Perfect Draft Wifi v1.1</h1>");
+            sprintf(buffer,"<p><h2 align=\"center\">Digital Pot R = %4.2f kOhm</h2></p>",digPot.getK());
             client.println(buffer);
             client.println("<p><a href=\"/Temp/bypass\"><button class=\"button\">Bypass</button></a></p>");
             client.println("<p><a href=\"/Temp/6deg\"><button class=\"button\">6&deg;C</button></a>");
-            client.println("<a href=\"/Temp/7deg\"><button class=\"button\">7&deg;C</button></a></p>");
+            client.println("<a href=\"/Temp/10deg\"><button class=\"button\">10&deg;C</button></a>");
+            client.println("<a href=\"/Temp/11deg\"><button class=\"button\">11&deg;C</button></a></p>");
             client.println("<p><a href=\"/Temp/inc\"><button class=\"button\">+</button></a></p>");
             client.println("<p><a href=\"/Temp/dec\"><button class=\"button\">-</button></a></p>");
             client.println("<p><a href=\"/Temp/store\"><button class=\"button\">Save</button></a></p>");
@@ -157,13 +221,21 @@ void loop() {
         }
       }
     }
-
     header = "";
-
     client.stop();
     Serial.println("Client disconnected");
     Serial.println("");
   }
-
   ArduinoOTA.handle();
 }
+#if defined(__MQTT_ENABLED__)
+void pub(const char* topic, const char* value) {
+  if (client.connected() && useMQTT) {
+    sprintf(buffer,"/PerfectDraft/%s/%s",ota_hostname,topic);
+    client.publish(buffer,value);
+    Serial.println("Sending to MQTT Broker:");
+    Serial.println(buffer);
+    Serial.println(value);
+  }
+}
+#endif
