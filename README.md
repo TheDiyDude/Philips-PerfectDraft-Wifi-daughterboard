@@ -11,11 +11,12 @@ NOTE: Please pay additional attention if you work with high-voltage electricial 
 ```
 Features: 
   Wifi enabled
+  Wifi Setup AP Mode (Wifi credentials stored in EEPROM)
   OTA Updates
   Set Cooling Temperature via Webbrowser http://PerfectDraft.local or IP
   Bypass your settings and use orginal NTC value (to see correct Temp after 5 Minutes)
-  Use Fast Temp Buttons: 7°C
-  Save your setting and use after every reboot
+  Use Fast Temp Buttons: 7°C, 10°, 11° C
+  Save your setting within EEPROM and set after every reboot automatically
 ```
 ![Fritzing Sketch](media/PerfectDraftWifi_Sketch.png)
 
