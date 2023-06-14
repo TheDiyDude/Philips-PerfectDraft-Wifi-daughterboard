@@ -53,11 +53,11 @@ char kOhm[30];
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting");
-  readData();                                     //Check EEPROM for stored credentials
-  if (ssid.length() == 0) {                       //If not found set AP mode
+  readData();                                     
+  if (ssid.length() == 0) {                       
     ap_mode();
   } else {
-    if (testWifi()) {                             //If found try to connect to WiFi AP
+    if (testWifi()) {                             
       Serial.println("WiFi Connected!!!");
       apmode = false;
       // Port defaults to 8266
