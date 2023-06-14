@@ -1,16 +1,11 @@
-# Philips-PerfectDraft-Wifi-daughterboard
-A daughterboard to the non-pro version of PerfectDraft beer dispenser that add Wifi and temperature control
 
+# Wifi Extension Board for Philips Perfect Draft (not Pro)
 ```
 Ther are a couple of older approaches with potentiometers and switches to set a desired beer temperature.
 Standard configuration is 3°C and sometimes this is to cold. Or you want to save energy. Which is not possible.
 Here you can build your own PCB or other board type to add Wifi capabilities to your Perfect Draft machine (not Pro).
 
-NOTE: Please pay additional attention if you work with high-voltage electricial power. If you are not aware of security 
-when working with electricial power dont do this project. I am not responsible if you hurt youself or others. 
-Your household AC current is between 110 and 240 volts and can kill you. Wiring errors lead into fire or turn your 
-project into a leathal weapon!This is a diy project and you have to know what you are doing and think before you 
-do something. Ok, I am a notorious german and we love these safety instructions. 
+NOTE: Please pay additional attention if you work with high-voltage electricial power. If you are not aware of security when working with electricial power dont do this project. I am not responsible if you hurt youself or others. Your household AC current is between 110 and 240 volts and can kill you. Wiring errors lead into fire or turn your project into a leathal weapon!This is a diy project and you have to know what you are doing and think before you do something. Ok, I am a notorious german and we love these safety instructions. 
 ```
 
 ```
@@ -71,7 +66,9 @@ Ensure to change your SSID and credentials before uploading the firmware. See fi
 Ensure to change the default OTA credentials before uploading - default OTA upload password is 'pd2023'
 Build the firmware and if you have done the wiring correctly you can see the Perfect Draft Wifi Website:
 ```
-<p style="text-align:center;"><img alt="WebApp" src="media/PerfectDraftApp.png" width="25%"></p>
+<p style="text-align:center;"><img alt="WebApp" src="media/PerfectDraftApp-Setup.png" width="25%">
+<img alt="WebApp" src="media/PerfectDraftApp.png" width="25%"></p>
+
 
 After compiling and uploading you should be able to connect to your hostname (see Credentials.h for setting hostname):
 ```
