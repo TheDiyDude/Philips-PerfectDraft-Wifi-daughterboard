@@ -53,11 +53,11 @@ char kOhm[30];
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting");
-  readData();                                     
-  if (ssid.length() == 0) {                       
+  readData();                                     //Check EEPROM for stored credentials
+  if (ssid.length() == 0) {                       //If not found set AP mode
     ap_mode();
   } else {
-    if (testWifi()) {                             
+    if (testWifi()) {                             //If found try to connect to WiFi AP
       Serial.println("WiFi Connected!!!");
       apmode = false;
       // Port defaults to 8266
@@ -94,6 +94,7 @@ void setup() {
       #if defined(__MQTT_ENABLED__)
       Serial.print("connecting to MQTT host ");
       mqtt.setServer(mqtt_hostname, MQTT_PORT);
+      mqtt.setCallback(callback);
       mqttRetryCount=0;
       if (!mqtt.connected()) {
             while (!mqtt.connected() && useMQTT) {
@@ -107,6 +108,8 @@ void setup() {
       if (useMQTT) {
         Serial.println(". connected!");
         pub("status", "alive");
+        sprintf(buffer,"/PerfectDraft/%s/setTemp",ota_hostname);
+        mqtt.subscribe(buffer);
       }
       if (!useMQTT && mqttRetryCount>=10) {
         Serial.println(". failed!");
@@ -144,6 +147,32 @@ void pub(const char* topic, const char* value) {
     Serial.println("Sending to MQTT Broker:");
     Serial.println(buffer);
     Serial.println(value);
+  }
+}
+void callback(char* topic, byte* payload, unsigned int length) {
+  payload[length] = '\0';
+  String s = String((char*)payload);
+  int setTemp = s.toFloat();
+
+  sprintf(buffer,"Message arrived [%s] %s",topic,s);
+  Serial.println(buffer);
+
+  if (setTemp >= 3 && setTemp <= 12) {
+    Serial.println("setTemp in range!");
+    switch(setTemp) {
+      case  6: Serial.println("setTemp is 6 °C / Setting now 4.85 kOhm");
+               digPot.set((float)4.8);
+               break;
+      case 10: Serial.println("setTemp is 10 °C / Setting now 5.66 kOhm");
+               digPot.set((float)5.66);
+               break;
+      case 11: Serial.println("setTemp is 11 °C / Setting now 6.8 kOhm");
+               digPot.set((float)6.8);
+               break;                            
+      default: sprintf(buffer,"This temperature currently not supported: %d °C",setTemp);
+               Serial.println(buffer);
+               break;      
+    }
   }
 }
 #endif
